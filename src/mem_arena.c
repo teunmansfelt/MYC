@@ -107,9 +107,13 @@ static inline size_t calc_mem_arena_allocation_size(uint32_t requested_size)
 
 static inline size_t calc_mem_arena_page_count(size_t allocation_size)
 {
+    /* The steps below try to kind of visualize the page count calculation, but to be honest the maths is kind of a mess.
+    In essence it is the formula for calculating the allocation size above and solving for page count (with some simplification), which boils down to:
+    #pages = [total_size - sizeof(Arena_t) - 4*sizeof(LayoutNode_t) - (sizeof(LayoutNode_t) / (#NODE_CHILD - 1))]  
+           / [ARENA_PAGE_SIZE + sizeof(LayoutNode_t) + (sizeof(LayoutNode_t) / 2(#NODE_CHILD - 1))]. */
+
     typedef uint32_t MycMemLayoutNode_t;
     const size_t DIV_ERR_SCALAR = 2 * (MYC_MEM_LAYOUT_NODE_CHILD_COUNT - 1);    // Scalar used to avoid integer division rounding errors.
-
     const size_t static_memory_cost = ((sizeof(MycMemArena_t) + (4 * sizeof(MycMemLayoutNode_t))) * DIV_ERR_SCALAR) + (2 * sizeof(MycMemLayoutNode_t));
     const size_t memory_budget = (allocation_size * DIV_ERR_SCALAR) - static_memory_cost;
     const size_t memory_cost = ((MYC_MEM_ARENA_PAGE_SIZE + sizeof(MycMemLayoutNode_t)) * DIV_ERR_SCALAR) + sizeof(MycMemLayoutNode_t);
