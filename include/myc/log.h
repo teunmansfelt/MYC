@@ -1,10 +1,12 @@
 #ifndef _MYC_LOG_H_
 #define _MYC_LOG_H_
 
+#ifndef __FUNC_NAME__
 #if __STDC_VERSION__ >= 199901L
     #define __FUNC_NAME__ __func__
 #else
     #define __FUNC_NAME__ "N/A"
+#endif
 #endif
 
 #ifndef _MYC_LOG_LEVEL
@@ -12,7 +14,8 @@
 #endif
 
 #define MYC_FMT_BOLD(TEXT)   "\033[1m" TEXT "\033[22m"
-#define MYC_FMT_ITALIC(TEXT) "\033[2m" TEXT "\033[22m"
+#define MYC_FMT_ITALIC(TEXT) "\033[3m" TEXT "\033[23m"
+#define MYC_FMT_SCORE(TEXT)  "\033[4m" TEXT "\033[24m"
 #define MYC_FMT_RED(TEXT)    "\033[91m" TEXT "\033[39m"
 #define MYC_FMT_YELLOW(TEXT) "\033[93m" TEXT "\033[39m"
 #define MYC_FMT_GREEN(TEXT)  "\033[92m" TEXT "\033[39m"

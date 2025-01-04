@@ -85,3 +85,31 @@ void _myc_private_log_todo(const char *func_name, const char *file_path, int lin
     print_message(message_fmt, args);
     va_end(args);
 }
+
+void _myc_private_log_assert_failed(const char *func_name, const char *file_path, int line_nr, const char *check, const char *message_fmt, ...)
+{
+    print_header("["MYC_FMT_RED("FAILED ASSERTION")"]", func_name, file_path, line_nr);
+
+    const size_t buffer_size = 1 + snprintf(NULL, 0, "Assertion '"MYC_FMT_RED("%s")"' failed!   =>   %s", check, message_fmt);
+    char ext_message_fmt[buffer_size];
+    snprintf(ext_message_fmt, buffer_size, "Assert '"MYC_FMT_RED("%s")"' failed!   =>   %s", check, message_fmt);
+
+    va_list_t args;
+    va_start(args, message_fmt);
+    print_message(ext_message_fmt, args);
+    va_end(args);
+}
+
+void _myc_private_log_unreachable(const char *func_name, const char *file_path, int line_nr, const char *message_fmt, ...)
+{
+    print_header("["MYC_FMT_RED("UNREACHABLE CODE")"]", func_name, file_path, line_nr);
+
+    const size_t buffer_size = 1 + snprintf(NULL, 0, "Broken control flow   =>   %s", message_fmt);
+    char ext_message_fmt[buffer_size];
+    snprintf(ext_message_fmt, buffer_size, "Broken control flow   =>   %s", message_fmt);
+
+    va_list_t args;
+    va_start(args, message_fmt);
+    print_message(ext_message_fmt, args);
+    va_end(args);
+}
