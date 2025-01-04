@@ -39,6 +39,7 @@ $(BLD_DIR)/%.o: $(SRC_DIR)/%.c
 .PHONY: examples
 examples: $(MYC_STATIC_LIB)
 	cc $(CFLAGS) $(DEFINES) -o $(BIN_DIR)/log-example $(EX_DIR)/ex_log.c $(MYC_STATIC_LIB)
+	cc $(CFLAGS) $(DEFINES) -o $(BIN_DIR)/memory-example $(EX_DIR)/ex_mem.c $(MYC_STATIC_LIB)
 	@printf "==================================================\ntarget '$@' finished!\n\n"
 
 
