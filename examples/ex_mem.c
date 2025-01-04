@@ -11,6 +11,8 @@ int main(void)
         return exit_code;
     }
     MYC_LOG_INFO("new memory arena created successfully.");
+    myc_mem_arena_introspect(arena);
+
 
     myc_mem_arena_destroy(arena);
     return exit_code;

@@ -30,6 +30,22 @@ typedef struct _MycMemoryLayout {
     uint32_t *max_free_sizes;
 } MycMemLayout_t;
 
+static inline uint32_t mem_layout_bucket_size(const MycMemLayout_t *layout, size_t bucket_idx) {
+    return layout->bucket_offsets[bucket_idx + 1] - layout->bucket_offsets[bucket_idx];
+}
+
+static inline uint32_t mem_layout_bucket_free_size(const MycMemLayout_t *layout, size_t bucket_idx) {
+    return layout->max_free_sizes[bucket_idx + layout->parent_node_count];
+}
+
+static inline uint32_t mem_layout_bucket_size_used(const MycMemLayout_t *layout, size_t bucket_idx) {
+    return mem_layout_bucket_size(layout, bucket_idx) - mem_layout_bucket_free_size(layout, bucket_idx);
+}
+
+static inline uint32_t mem_layout_bucket_free_offset(const MycMemLayout_t *layout, size_t bucket_idx) {
+    return layout->bucket_offsets[bucket_idx + 1] - mem_layout_bucket_free_size(layout, bucket_idx);
+}
+
 typedef struct _MycMemoryArena {
     size_t size;
     size_t internal_size;
@@ -38,5 +54,13 @@ typedef struct _MycMemoryArena {
     MycMemArena_t *next;
 } MycMemArena_t;
 
+typedef struct _MycMemoryChunkHeader {
+    uint32_t size;
+    uint32_t offset;
+} MycMemChunk_t;
+
+static inline MycMemChunk_t* mem_chunk_at(const MycMemArena_t *arena, uint32_t offset) {
+    return (void*)arena + offset;
+}
 
 #endif // _MYC_MEMORY_INTENRAL_H_

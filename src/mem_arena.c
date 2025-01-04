@@ -159,9 +159,79 @@ static void mem_arena_reset_layout(MycMemArena_t *arena)
 
 // === INTROSPECTION =============================================================================================== //
 
+static inline void mem_arena_print_global_info(const MycMemArena_t *arena);
+static inline void mem_arena_print_local_info(const MycMemArena_t *arena);
+static inline void mem_arena_print_chunks_info(const MycMemArena_t *arena);
+
 /* Prints memory usage/layout information to stdout. */
 void myc_mem_arena_introspect(const MycMemArena_t *arena)
 {
-    MYC_UNUSED(arena);
-    MYC_NOT_IMPLEMENTED();
+    printf("["MYC_FMT_GREEN("MEMORY INTROSPECT")"]:\n");
+    mem_arena_print_global_info(arena);
+
+    printf("  | Regions:\n");
+    for (const MycMemArena_t *arena_i = arena; arena_i != NULL; arena_i = arena_i->next) {
+        mem_arena_print_local_info(arena_i);
+        mem_arena_print_chunks_info(arena_i);
+    }
+}
+
+static inline void mem_arena_print_global_info(const MycMemArena_t *arena)
+{
+    size_t region_count = 0;
+    size_t total_size = 0;
+    size_t user_size = 0;
+    for (const MycMemArena_t *arena_i = arena; arena_i != NULL; arena_i = arena_i->next) {
+        region_count += 1;
+        total_size += arena_i->size;
+        user_size += arena_i->size - arena_i->internal_size;
+    }
+
+    printf("  |   Memory Arena:   < region count: "MYC_FMT_BOLD("%lu"), region_count);
+    printf(" | user size: "MYC_FMT_BOLD("%.2f KiB"), (float)user_size / 1024.0f);
+    printf(" totla size: "MYC_FMT_BOLD("%.2f KiB")" >\n", (float)total_size / 1024.0f);
+}
+
+static inline void mem_arena_print_local_info(const MycMemArena_t *arena)
+{
+    const size_t user_size = arena->size - arena->internal_size;
+    size_t size_used = 0;
+    for (size_t bucket_idx = 0; bucket_idx < arena->layout.bucket_node_count; ++bucket_idx) {
+        size_used += mem_layout_bucket_size_used(&arena->layout, bucket_idx);
+    }
+    size_used -= arena->internal_size;
+
+    printf("  |      - Region at "MYC_FMT_BOLD("0x%012lx")":", (size_t)arena);
+    printf("   < capacity: "MYC_FMT_BOLD("%.2f KiB"), (float)user_size / 1024.0f);
+    printf(" | size used: "MYC_FMT_BOLD("%.2f KiB")" ("MYC_FMT_BOLD("%.1f%%")") >\n", 
+            (float)size_used / 1024.0f, 100.0f * (float)size_used / (float)user_size);
+}
+
+static inline void mem_arena_print_chunks_info(const MycMemArena_t *arena)
+{
+    char buffer[128];
+    printf("  |         - Chunk at "MYC_FMT_BOLD("0x00000000")":");
+    snprintf(buffer, sizeof(buffer), "   < state: INTERNAL | size: "MYC_FMT_BOLD("%lu bytes")" >", arena->internal_size);
+    printf("%-56s", buffer);
+
+    uint32_t chunk_offset = (uint32_t)arena->internal_size;
+    for (size_t bucket_idx = 0; bucket_idx < arena->layout.bucket_node_count; ++bucket_idx) {
+        while (chunk_offset < mem_layout_bucket_free_offset(&arena->layout, bucket_idx)) {
+            MycMemChunk_t *chunk = mem_chunk_at(arena, chunk_offset);
+            MYC_ASSERT(chunk->size > 0, "Chunk size is never 0");
+            printf("\n  |         - Chunk at "MYC_FMT_BOLD("0x%08x")":", chunk->offset);
+            snprintf(buffer, sizeof(buffer), "   < state: ALLOCATED | size: "MYC_FMT_BOLD("%u bytes")" >", chunk->size);
+            printf("%-56s", buffer);
+            chunk_offset += chunk->size;
+        }
+        uint32_t free_size = mem_layout_bucket_free_size(&arena->layout, bucket_idx);
+        if (free_size > 0) {
+            printf("\n  |         - Chunk at "MYC_FMT_BOLD("0x%08x")":", chunk_offset);
+            snprintf(buffer, sizeof(buffer), "   < state: FREE | size: "MYC_FMT_BOLD("%u bytes")" >", free_size);
+            printf("%-56s", buffer);
+        }
+        printf("   (BUCKET END)");
+        chunk_offset += free_size;
+    }
+    printf("\n");
 }
