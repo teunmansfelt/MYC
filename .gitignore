@@ -2,6 +2,7 @@
 /bin-int/
 
 /.vscode/
+klad.c
 
 # Prerequisites
 *.d

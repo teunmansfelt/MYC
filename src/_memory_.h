@@ -94,4 +94,15 @@ typedef struct _MycMemoryChunkSearchInfo {
     bool is_last_in_bucket;
 } MycMemChunkSearchInfo_t;
 
+
+
+
+typedef struct _MycMemBumpAllocator MycMemBumpAlloc_t;
+
+typedef struct _MycMemBumpAllocator {
+    uint32_t capacity;
+    uint32_t size_used;
+    MycMemBumpAlloc_t *next;
+} MycMemBumpAlloc_t;
+
 #endif // _MYC_MEMORY_INTENRAL_H_

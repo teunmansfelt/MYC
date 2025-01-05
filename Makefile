@@ -16,7 +16,7 @@ endif
 .PHONY: all shared
 MYC_STATIC_LIB := $(BIN_DIR)/libmyc.a
 MYC_SHARED_LIB := $(BIN_DIR)/libmyc.so
-MYC_OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(BLD_DIR)/%.o, $(shell find $(SRC_DIR) -type f -name *.c))
+MYC_OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(BLD_DIR)/%.o, $(shell find $(SRC_DIR) -type f -name "*.c"))
 
 all: $(MYC_STATIC_LIB)
 $(MYC_STATIC_LIB): $(MYC_OBJECTS)
@@ -40,6 +40,7 @@ $(BLD_DIR)/%.o: $(SRC_DIR)/%.c
 examples: $(MYC_STATIC_LIB)
 	cc $(CFLAGS) $(DEFINES) -o $(BIN_DIR)/log-example $(EX_DIR)/ex_log.c $(MYC_STATIC_LIB)
 	cc $(CFLAGS) $(DEFINES) -o $(BIN_DIR)/memory-example $(EX_DIR)/ex_mem.c $(MYC_STATIC_LIB)
+	cc $(CFLAGS) $(DEFINES) -o $(BIN_DIR)/allocator-example $(EX_DIR)/ex_allocators.c $(MYC_STATIC_LIB)
 	@printf "==================================================\ntarget '$@' finished!\n\n"
 
 

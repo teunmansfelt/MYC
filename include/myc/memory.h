@@ -5,12 +5,16 @@
 
 #define MYC_MEM_ALLOC_FAILED (void*)0
 
+
+
+// === MEMORY ARENA ================================================================================================ //
+
 /* Opaque handle representing a memory arena. */
 typedef struct _MycMemoryArena MycMemArena_t;
 
 /* Creates a new memory arena with a capacity of at least 'size' bytes. */
 myc_err_t myc_mem_arena_create(MycMemArena_t **new_arena, uint32_t size);
-/* Expands the memory arena by creating a new arena of at least 'add_size' bytes, which is added as a child.
+/* Expands the memory arena by creating a new arena of at least 'add_size' bytes and adding it as a child.
 !!NOTE: The newly created memory region need not be contiguous to existing memory region(s). */
 myc_err_t myc_mem_arena_expand(MycMemArena_t *arena, uint32_t add_size);
 /* Destroys the memory arena and releases the resources back to the OS. */
@@ -26,8 +30,34 @@ void myc_mem_arena_free(void *addr);
 /* Resets the memory arena by freeing all currently allocated memory chunks. This does not release resources to the OS. */
 void myc_mem_arena_reset(MycMemArena_t *arena);
 
+/* Returns the actual user size of the memory chunk at 'addr'. */
+uint32_t myc_mem_arena_chunk_size(void *addr);
 /* Prints memory usage/layout information to stdout. */
 void myc_mem_arena_introspect(const MycMemArena_t *arena);
+
+
+
+// === MEMORY ALLOCATORS =========================================================================================== //
+
+/* Opaque handle representing a simple bump allocator. */
+typedef struct _MycMemBumpAllocator MycMemBumpAlloc_t;
+
+/* Creates a new bump allocator with a capacity of at least 'size' bytes. */
+myc_err_t myc_mem_bump_alloc_create(MycMemBumpAlloc_t **new_bump_alloc, MycMemArena_t *arena, uint32_t size);
+/* Expands the bump allocator by creating a new allocator of at least 'add_size' bytes and adding it as a child. */
+myc_err_t myc_mem_bump_alloc_expand(MycMemBumpAlloc_t *bump_alloc, uint32_t add_size);
+/* Destroys the bump allocator and frees all memory allocated by it. */
+void myc_mem_bump_alloc_destroy(MycMemBumpAlloc_t *bump_alloc);
+
+/* Allocates 'size' bytes on the bump allocator, aligned to a multiple of 'alignment' 
+!!NOTE: The given alignment must be a power of two. */
+void* myc_mem_bump_aligned_malloc(MycMemBumpAlloc_t *bump_alloc, uint32_t size, uint32_t alignment);
+/* Allocates 'size' bytes on the bump allocator, aligned to a multiple of sizeof(void*). */
+static inline void* myc_mem_bump_malloc(MycMemBumpAlloc_t *bump_alloc, uint32_t size) {
+    return myc_mem_bump_aligned_malloc(bump_alloc, size, sizeof(void*));
+}
+/* Resets the bump allocator as if no allocations were made previously. */
+void myc_mem_bump_alloc_reset(MycMemBumpAlloc_t *bump_alloc);
 
 
 #endif // _MYC_MEMORY_H_
