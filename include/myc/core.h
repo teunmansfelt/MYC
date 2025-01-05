@@ -3,6 +3,7 @@
 
 #include "myc/assert.h"
 #include "myc/log.h"
+#include "myc/memory.h"
 #include "myc/types.h"
 
 #define MYC_MIN(A, B) (A < B) ? A : B

@@ -13,14 +13,22 @@ _Static_assert(MYC_IS_POWER_OFF_TWO(MYC_MEM_ARENA_PAGE_SIZE), "Memory arena page
 typedef struct _MycMemoryArena MycMemArena_t;
 typedef struct _MycMemoryLayout MycMemLayout_t;
 typedef struct _MycMemoryChunkHeader MycMemChunk_t;
-typedef struct _MycMemoryChunkSearchInfo MycMemChunkSearch_t;
+typedef struct _MycMemoryChunkSearchInfo MycMemChunkSearchInfo_t;
 
-static inline size_t calc_mem_layout_parent_node_count(size_t bucket_node_count) {
+static inline size_t calc_parent_node_count(size_t bucket_node_count) {
     return (bucket_node_count + MYC_MEM_LAYOUT_NODE_CHILD_COUNT - 3) / (MYC_MEM_LAYOUT_NODE_CHILD_COUNT - 1);
 }
 
-static inline size_t calc_mem_layout_free_size_node_count(size_t bucket_node_count) {
-    return bucket_node_count + calc_mem_layout_parent_node_count(bucket_node_count);
+static inline size_t calc_free_size_node_count(size_t bucket_node_count) {
+    return bucket_node_count + calc_parent_node_count(bucket_node_count);
+}
+
+static inline size_t node_parent_idx(size_t node_idx) {
+    return (node_idx - 1) / MYC_MEM_LAYOUT_NODE_CHILD_COUNT;
+}
+
+static inline size_t node_children_base_idx(size_t node_idx) {
+    return (node_idx * MYC_MEM_LAYOUT_NODE_CHILD_COUNT) + 1;
 }
 
 typedef struct _MycMemoryLayout {
@@ -29,6 +37,10 @@ typedef struct _MycMemoryLayout {
     uint32_t *bucket_offsets;
     uint32_t *max_free_sizes;
 } MycMemLayout_t;
+
+static inline size_t mem_layout_node_count(const MycMemLayout_t *layout) {
+    return layout->bucket_node_count + layout->parent_node_count;
+}
 
 static inline uint32_t mem_layout_bucket_size(const MycMemLayout_t *layout, size_t bucket_idx) {
     return layout->bucket_offsets[bucket_idx + 1] - layout->bucket_offsets[bucket_idx];
@@ -62,5 +74,24 @@ typedef struct _MycMemoryChunkHeader {
 static inline MycMemChunk_t* mem_chunk_at(const MycMemArena_t *arena, uint32_t offset) {
     return (void*)arena + offset;
 }
+
+static inline MycMemArena_t* mem_chunk_get_arena(const MycMemChunk_t* chunk) {
+    return (void*)chunk - chunk->offset;
+}
+
+static inline MycMemChunk_t* mem_chunk_from_addr(void *addr) {
+    return addr - sizeof(MycMemChunk_t);
+}
+
+static inline void* mem_addr_from_chunk(MycMemChunk_t *chunk) {
+    return (void*)chunk + sizeof(MycMemChunk_t);
+}
+
+typedef struct _MycMemoryChunkSearchInfo {
+    MycMemArena_t *arena;
+    size_t bucket_idx;
+    bool is_first_in_bucket;
+    bool is_last_in_bucket;
+} MycMemChunkSearchInfo_t;
 
 #endif // _MYC_MEMORY_INTENRAL_H_
