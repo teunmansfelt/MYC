@@ -32,7 +32,7 @@ void* myc_mem_arena_malloc(MycMemArena_t *arena, uint32_t size)
 void* myc_mem_arena_realloc(void *addr, uint32_t new_size)
 {
     if (new_size == 0) return MYC_MEM_ALLOC_FAILED;
-    new_size = MYC_QUANTIZE_UP(new_size, MYC_MEM_ARENA_PAGE_SIZE);
+    new_size = MYC_QUANTIZE_UP(new_size + sizeof(MycMemChunk_t), MYC_MEM_ARENA_PAGE_SIZE);
 
     MycMemChunk_t *chunk = mem_chunk_from_addr(addr);    
     MycMemChunkSearchInfo_t chunk_info = mem_chunk_find(chunk);
