@@ -98,12 +98,27 @@ typedef struct _MycMemoryChunkSearchInfo {
 
 
 typedef struct _MycMemBumpAllocator MycMemBumpAlloc_t;
+typedef struct _MycMemBumpAllocatorNode MycMemBumpAllocNode_t;
 
-typedef struct _MycMemBumpAllocator {
+typedef struct _MycMemBumpAllocatorNode {
     uint32_t capacity;
     uint32_t size_used;
-    MycMemBumpAlloc_t *current;
-    MycMemBumpAlloc_t *next;
+    MycMemBumpAllocNode_t *next;
+} MycMemBumpAllocNode_t;
+
+static inline void* mem_bump_alloc_node_end_ptr(const MycMemBumpAllocNode_t *node) {
+    return (void*)node + node->capacity;
+}
+
+static inline void* mem_bump_alloc_node_free_ptr(const MycMemBumpAllocNode_t *node) {
+    return (void*)node + node->size_used;
+}
+
+typedef struct _MycMemBumpAllocator {
+    MycMemBumpAllocNode_t node;
+    MycMemArena_t *arena;
+    MycMemBumpAllocNode_t *current;
+    MycMemBumpAllocNode_t *last;
 } MycMemBumpAlloc_t;
 
 #endif // _MYC_MEMORY_INTENRAL_H_

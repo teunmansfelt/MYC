@@ -31,7 +31,7 @@ void myc_mem_arena_free(void *addr);
 void myc_mem_arena_reset(MycMemArena_t *arena);
 
 /* Returns the actual user size of the memory chunk at 'addr'. */
-uint32_t myc_mem_arena_chunk_size(void *addr);
+uint32_t myc_mem_arena_get_chunk_size(void *addr);
 /* Prints memory usage/layout information to stdout. */
 void myc_mem_arena_introspect(const MycMemArena_t *arena);
 
@@ -51,13 +51,13 @@ void myc_mem_bump_alloc_destroy(MycMemBumpAlloc_t *bump_alloc);
 
 /* Allocates 'size' bytes on the bump allocator, aligned to a multiple of 'alignment' 
 !!NOTE: The given alignment must be a power of two. */
-void* myc_mem_bump_aligned_malloc(MycMemBumpAlloc_t *bump_alloc, uint32_t size, uint32_t alignment);
+void* myc_mem_bump_aligned_malloc(MycMemBumpAlloc_t *bump_alloc, uint32_t size, size_t alignment);
 /* Allocates 'size' bytes on the bump allocator, aligned to a multiple of sizeof(void*). */
 static inline void* myc_mem_bump_malloc(MycMemBumpAlloc_t *bump_alloc, uint32_t size) {
     return myc_mem_bump_aligned_malloc(bump_alloc, size, sizeof(void*));
 }
 /* Returns the number of contiguous bytes still available. */
-uint32_t myc_mem_bump_alloc_free_size(MycMemBumpAlloc_t *bump_alloc);
+uint32_t myc_mem_bump_alloc_get_free_size(MycMemBumpAlloc_t *bump_alloc);
 /* Resets the bump allocator as if no allocations were made previously. */
 void myc_mem_bump_alloc_reset(MycMemBumpAlloc_t *bump_alloc);
 

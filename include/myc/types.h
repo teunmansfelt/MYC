@@ -15,6 +15,4 @@ typedef enum MycExitCode {
     MYC_ERR_NO_MEMORY = ENOMEM,
 } myc_err_t;
 
-typedef unsigned long myc_ptr_value_t;
-
 #endif // _MYC_TYPES_H_

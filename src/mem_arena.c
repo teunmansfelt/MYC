@@ -168,7 +168,7 @@ static inline void mem_arena_print_local_info(const MycMemArena_t *arena);
 static inline void mem_arena_print_chunks_info(const MycMemArena_t *arena);
 
 /* Returns the actual user size of the memory chunk at 'addr'. */
-uint32_t myc_mem_arena_chunk_size(void *addr) 
+uint32_t myc_mem_arena_get_chunk_size(void *addr) 
 {
     MycMemChunk_t *chunk = mem_chunk_from_addr(addr);
     uint32_t user_size = chunk->size - sizeof(MycMemChunk_t);
