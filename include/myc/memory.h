@@ -62,4 +62,13 @@ uint32_t myc_mem_bump_alloc_free_size(MycMemBumpAlloc_t *bump_alloc);
 void myc_mem_bump_alloc_reset(MycMemBumpAlloc_t *bump_alloc);
 
 
+
+/* Opaque handle representing a frame allocator (aka tempory allocator). */
+typedef struct _MycMemFrameAllocator MycMemFrameAlloc_t;
+
+/* Creates a new frame allocator with a capacity of at least 'size' bytes. */
+myc_err_t myc_mem_frame_alloc_create(MycMemFrameAlloc_t **new_frame_alloc, MycMemArena_t *arena, uint32_t size);
+/* Expands the frame allocator by creating a new allocator of at least 'add_size' bytes and adding it as a child. */
+myc_err_t myc_mem_frame_alloc_expand(MycMemFrameAlloc_t **new_frame_alloc, MycMemArena_t *arena, uint32_t size);
+
 #endif // _MYC_MEMORY_H_

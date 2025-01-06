@@ -12,6 +12,7 @@ myc_err_t myc_mem_bump_alloc_create(MycMemBumpAlloc_t **new_bump_alloc, MycMemAr
     MycMemChunk_t *chunk = mem_chunk_from_addr(bump_alloc);
     bump_alloc->capacity = chunk->size - sizeof(MycMemChunk_t);
     bump_alloc->size_used = sizeof(MycMemBumpAlloc_t);
+    bump_alloc->current = bump_alloc;
     bump_alloc->next = NULL;
     *new_bump_alloc = bump_alloc;
     return MYC_SUCCESS;
@@ -27,6 +28,7 @@ myc_err_t myc_mem_bump_alloc_expand(MycMemBumpAlloc_t *bump_alloc, uint32_t add_
         return exit_code;
     }
     add_bump_alloc->next = bump_alloc->next;
+    bump_alloc->current = add_bump_alloc;
     bump_alloc->next = add_bump_alloc;
     return MYC_SUCCESS;
 }
@@ -51,6 +53,7 @@ void myc_mem_bump_alloc_reset(MycMemBumpAlloc_t *bump_alloc)
     for (MycMemBumpAlloc_t *bump_alloc_i = bump_alloc; bump_alloc_i != NULL; bump_alloc_i = bump_alloc_i->next) {
         bump_alloc_i->size_used = sizeof(MycMemBumpAlloc_t);
     }
+    bump_alloc->current = bump_alloc;
 }
 
 /* Allocates 'size' bytes on the bump allocator, aligned to a multiple of 'alignment' 
@@ -59,13 +62,16 @@ void* myc_mem_bump_aligned_malloc(MycMemBumpAlloc_t *bump_alloc, uint32_t size, 
 {
     MYC_ASSERT(MYC_IS_POWER_OFF_TWO(alignment), "Alignment must be a power of two.");
 
-    myc_ptr_value_t end_ptr = (myc_ptr_value_t)bump_alloc + bump_alloc->capacity;
-    myc_ptr_value_t free_ptr = (myc_ptr_value_t)bump_alloc + bump_alloc->size_used;
-    myc_ptr_value_t aligned_free_ptr = MYC_QUANTIZE_UP(free_ptr, alignment);
-    if (aligned_free_ptr + size > end_ptr) {
-        return MYC_MEM_ALLOC_FAILED;
+    while (bump_alloc->current != NULL) {
+        myc_ptr_value_t end_ptr = (myc_ptr_value_t)bump_alloc + bump_alloc->capacity;
+        myc_ptr_value_t free_ptr = (myc_ptr_value_t)bump_alloc + bump_alloc->size_used;
+        myc_ptr_value_t aligned_free_ptr = MYC_QUANTIZE_UP(free_ptr, alignment);
+        if (aligned_free_ptr + size <= end_ptr) {
+            bump_alloc->size_used += size + (aligned_free_ptr - free_ptr);
+            void *addr = (void*)aligned_free_ptr;
+            return addr;
+        }
+        bump_alloc->current = bump_alloc->current->next;
     }
-    bump_alloc->size_used += size + (aligned_free_ptr - free_ptr);
-    void *addr = (void*)aligned_free_ptr;
-    return addr;
+    return MYC_MEM_ALLOC_FAILED;
 }

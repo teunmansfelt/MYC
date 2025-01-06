@@ -102,6 +102,7 @@ typedef struct _MycMemBumpAllocator MycMemBumpAlloc_t;
 typedef struct _MycMemBumpAllocator {
     uint32_t capacity;
     uint32_t size_used;
+    MycMemBumpAlloc_t *current;
     MycMemBumpAlloc_t *next;
 } MycMemBumpAlloc_t;
 
