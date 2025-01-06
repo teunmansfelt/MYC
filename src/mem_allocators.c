@@ -39,6 +39,12 @@ void myc_mem_bump_alloc_destroy(MycMemBumpAlloc_t *bump_alloc)
     }
 }
 
+/* Returns the number of contiguous bytes still available. */
+uint32_t myc_mem_bump_alloc_free_size(MycMemBumpAlloc_t *bump_alloc)
+{
+    return bump_alloc->capacity - bump_alloc->size_used;
+}
+
 /* Resets the bump allocator as if no allocations were made previously. */
 void myc_mem_bump_alloc_reset(MycMemBumpAlloc_t *bump_alloc)
 {

@@ -56,6 +56,8 @@ void* myc_mem_bump_aligned_malloc(MycMemBumpAlloc_t *bump_alloc, uint32_t size, 
 static inline void* myc_mem_bump_malloc(MycMemBumpAlloc_t *bump_alloc, uint32_t size) {
     return myc_mem_bump_aligned_malloc(bump_alloc, size, sizeof(void*));
 }
+/* Returns the number of contiguous bytes still available. */
+uint32_t myc_mem_bump_alloc_free_size(MycMemBumpAlloc_t *bump_alloc);
 /* Resets the bump allocator as if no allocations were made previously. */
 void myc_mem_bump_alloc_reset(MycMemBumpAlloc_t *bump_alloc);
 
